@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { isEmail } = require('validator');
+const bcrypt = require('bcrypt');
 // const mongoosePaginate = require('mongoose-will-paginate');
 // const SALT_WORK_FACTOR = 10;
 
@@ -6,71 +8,51 @@ var Schema = mongoose.Schema;
 
 var userSchema = Schema(
   {
-    email: { type: String },
+    email: {
+      type: String,
+      required: [true, 'Please enter an email'],
+      unique: true,
+      lowercase: true,
+      validate: [isEmail, 'Please enter a valid email']
+    },
+    password: {
+      type: String,
+      required: [true, 'Please enter a password'],
+      minlength: [6, 'Minimum password length is 6 characters'],
+    },
     firstname: { type: String },
     lastname: { type: String },
-    avatar: { type: String },
-    uid: { type: Number },
+    avatar: { type: String, default : 'https://api.hoclieu.vn/images/game/bbfb3597f173af631cb24f6ee0f8b8da.png' },
     role: { type: String, default: 'member' },
     language: { type: String, default: 'vi' },
     verify_teacher: { type: Number },
     username: { type: String, maxlength: 128 },
-    password: { type: String, select: false },
     birthday: { type: Date },
     display_first_name: { type: String, maxlength: 128 },
     display_last_name: { type: String, maxlength: 128 },
   },
   { timestamps: true }
 );
-var User = mongoose.model('User', userSchema);
+// fire a function before doc saved to db
+userSchema.pre('save', async function(next) {
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// static method to login user
+userSchema.statics.login = async function(email, password) {
+  const user = await this.findOne({ email });
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    }
+    throw Error('incorrect password');
+  }
+  throw Error('incorrect email');
+};
+
+const User = mongoose.model('user', userSchema);
 
 module.exports = User;
-// index sparse để không tính undefined vào index
-// có thể thay thế bằng: partialFilterExpression: {email: {$type: 'string'}}
-// trường hợp này thì sẽ không tính null, number,...
-// userSchema.index({ email: 1 }, { unique: true, sparse: true });
-// userSchema.index({ parent_uid: 1 });
-// userSchema.index({ username: 1 }, { unique: true, sparse: true });
-
-// userSchema.virtual('string_id').get(function () {
-//   return String(this._id);
-// });
-
-// userSchema.virtual('fullName').get(function () {
-//   return `${this.lastname} ${this.firstname}`;
-// });
-
-// userSchema.pre('save', function (next) {
-//   let user = this;
-
-//   // only hash the password if it has been modified (or is new)
-//   if (!user.isModified('password')) return next();
-//   // generate a salt
-//   bcrypt.genSalt(SALT_WORK_FACTOR, function (err, salt) {
-//     if (err) return next(err);
-
-//     // hash the password using our new salt
-//     bcrypt.hash(user.password, salt, function (err, hash) {
-//       if (err) return next(err);
-
-//       // override the cleartext password with the hashed one
-//       user.password = hash;
-//       next();
-//     });
-//   });
-// });
-
-// userSchema.methods.comparePassword = function (candidatePassword) {
-//   return bcrypt.compare(candidatePassword, this.password);
-// };
-
-// userSchema.static('findByEmail', function (email, callback) {
-//   return this.find({ email: email }, callback);
-// });
-
-// userSchema.static('findByUid', function (uid, callback) {
-//   return this.find({ uid: uid }, callback);
-// });
-
-// userSchema.plugin(mongoosePaginate);
-
