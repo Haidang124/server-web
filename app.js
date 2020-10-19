@@ -1,13 +1,13 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
-const port = 3000
+var createError = require("http-errors");
+var express = require("express");
+var path = require("path");
+var bodyParser = require("body-parser");
+var cookieParser = require("cookie-parser");
+const port = 3000;
 // var logger = require('morgan');
 
 // kết nối databse
-require('./src/loaders/database')();
+require("./src/loaders/database")();
 
 // tạo các thư mục cần thiết
 // require('./loaders/mkdirs')();
@@ -16,29 +16,29 @@ var app = express();
 // app.use(logger('dev'));
 
 // cài đặt cors
-var cors = require('cors');
+var cors = require("cors");
 app.use(
   cors({
-    origin: '*',
-    methods: 'GET,POST,OPTIONS,PUT,PATCH,DELETE',
-    allowedHeaders: 'Content-Type,x-access-token,x-requested-with',
-    optionsSuccessStatus: 200
+    origin: "http://localhost:3001",
+    methods: "GET,POST,OPTIONS,PUT,PATCH,DELETE",
+    allowedHeaders: "Content-Type,x-access-token,x-requested-with",
+    optionsSuccessStatus: 200,
+    credentials: true,
   })
 );
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, "../public")));
 
 // cài đặt router
-require('./src/routers')(app);
+require("./src/routers")(app);
 
 app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`)
-})
+  console.log(`App listening at http://localhost:${port}`);
+});
 module.exports = app;
-
 
 // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
@@ -78,4 +78,3 @@ module.exports = app;
 // });
 
 // module.exports = app;
-
