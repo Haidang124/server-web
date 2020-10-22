@@ -47,3 +47,21 @@ module.exports.getCurrentUser = async (req, res) => {
   let id = await getCurrentId(req);
   handleSuccessResponse(res, 200, { id: id });
 };
+
+module.exports.logOut = async (req, res) => {
+  try {
+    res.clearCookie("token");
+    return handleSuccessResponse(
+      res,
+      200,
+      {},
+      "Đăng xuất thành công!"
+    );
+  } catch (error) {
+    return handleErrorResponse(
+      res,
+      400,
+      "Đăng xuất thất bại!"
+    )
+  }
+}
