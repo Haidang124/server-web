@@ -80,8 +80,7 @@ userSchema.statics.checkNewData = async function(data) {
   if(data.newBirthday === "")  {
     data.newBirthday = new Date("2000-01-01"); // 01-01-2000
   } else {
-    const [year, month, day] = data.newBirthday.split("/");      
-    data.newBirthday = new Date(year, month, day);  // month = [0;11];
+    data.newBirthday = new Date(data.newBirthday);  // month = [0;11];
   }
   return data;
 }

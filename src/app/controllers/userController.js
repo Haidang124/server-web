@@ -78,59 +78,64 @@ module.exports.logOut = async (req, res) => {
 };
 
 module.exports.changePassword = async (req, res) => {
-  const data = req.body;  // {oldPassword, newPassword}
+  const data = req.body; // {oldPassword, newPassword}
   const user_id = await getCurrentId(req);
-  const email = await (await User.findOne({_id: user_id})).get("email");
-  if(email) {
+  const email = await (await User.findOne({ _id: user_id })).get("email");
+  if (email) {
     try {
       const user = await User.login(email, data.oldPassword);
       let query = await User.changePassword(user_id, data.newPassword);
-      if(query) {
-        return handleSuccessResponse(
-          res,
-          200,
-          {},
-          "Thay đổi password thành công!"
-        );
-      }
+      return handleSuccessResponse(
+        res,
+        200,
+        {},
+        "Thay đổi password thành công!"
+      );
     } catch (error) {
-      return handleErrorResponse(res, 400, error.message);
+      return handleErrorResponse(res, 400, error.message == "incorrect password"?"ERROR! Incorrect current password.": error.message);
     }
-  }
-  else {
+  } else {
     return handleErrorResponse(res, 400, "No Found User");
   }
-}
+};
 
 module.exports.getUserInfo = async (req, res) => {
+  // return data :{username, email, avatar, language, birthday, role}
   try {
     const user_id = await getCurrentId(req);
-    const user = await User.findOne({_id: user_id});
-    if(user)  {
+    const user = await User.findOne({ _id: user_id });
+    if (user) {
       return handleSuccessResponse(
         res,
         200,
         {
-          avatar: user.get("avatar"),
           role: user.get("role"),
+          avatar: user.get("avatar"),
           language: user.get("language"),
           email: user.get("email"),
-          username: user.get("username")
+          username: user.get("username"),
+          birthday:
+            (user.get("birthday")
+              ? String(user.get("birthday").getFullYear())
+              : "2000") +
+            "-" +
+            (user.get("birthday")
+              ? String(user.get("birthday").getMonth() + 1) <= "9"
+                ? "0" + String(user.get("birthday").getMonth() + 1)
+                : String(user.get("birthday").getMonth() + 1)
+              : "01") +
+            "-" +
+            (user.get("birthday")
+              ? String(user.get("birthday").getDate()) <= "9"
+                ? "0" + String(user.get("birthday").getDate())
+                : String(user.get("birthday").getDate())
+              : "01"),
         },
         "Get User Complate!"
       );
-    } 
-    return handleErrorResponse(
-      res,
-      400,
-      "Get User ERROR!"
-    );
+    }
+    return handleErrorResponse(res, 400, "Get User ERROR!");
   } catch (error) {
-    return handleErrorResponse(
-      res,
-      400,
-      "No Found User"
-    );
+    return handleErrorResponse(res, 400, "No Found User");
   }
-  
-}
+};
