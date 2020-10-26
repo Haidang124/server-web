@@ -45,4 +45,3 @@ exports.handleErrorResponse = async function (
     error: message,
   });
 };
-1
