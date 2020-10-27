@@ -92,7 +92,9 @@ module.exports.changePassword = async (req, res) => {
         "Thay đổi password thành công!"
       );
     } catch (error) {
-      return handleErrorResponse(res, 400, error.message == "incorrect password"?"ERROR! Incorrect current password.": error.message);
+      return handleErrorResponse(res, 
+        400, 
+        error.message == "incorrect password"?"ERROR! Incorrect current password.": error.message);
     }
   } else {
     return handleErrorResponse(res, 400, "No Found User");
