@@ -3,7 +3,7 @@ var express = require("express");
 var path = require("path");
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
-const port = 3000;
+const port = 3002;
 // var logger = require('morgan');
 
 // kết nối databse
@@ -34,10 +34,16 @@ app.use(express.static(path.join(__dirname, "../public")));
 
 // cài đặt router
 require("./src/routers")(app);
+var server = require("http").Server(app);
+var io = require("./src/loaders/socket")(server);
+app.set("io", io);
+app.set("port", port);
+console.log("Server is running at -> http://localhost:" + port);
+server.listen(port);
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`App listening at http://localhost:${port}`);
+// });
 module.exports = app;
 
 // catch 404 and forward to error handler
