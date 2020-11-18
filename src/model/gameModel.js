@@ -117,18 +117,22 @@ var gameSchema = Schema(
 );
 
 gameSchema.statics.update_game = async function (
-  game_id,
-  game_name,
-  image_game,
+  gameId,
+  gameName,
+  imageGame,
   dataQuestion
 ) {
-  // data: {game_id, game_name, image_game, dataQuestion}
+  // data: {gameId, gameName, imageGame, dataQuestion}
+  if (imageGame === "") {
+    imageGame =
+      "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/question-mark-icon-on-white-puzzle-royalty-free-image-917901148-1558452934.jpg";
+  }
   const result = await this.updateOne(
-    { _id: game_id },
+    { _id: gameId },
     {
       $set: {
-        title: game_name,
-        resources: { image: { image: image_game } },
+        title: gameName,
+        resources: { image: { image: imageGame } },
         data: {
           array: dataQuestion,
         },
