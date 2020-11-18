@@ -8,30 +8,30 @@ const {
 const { game } = require("../../routers/gameRouter");
 
 module.exports.createGame = async (req, res) => {
-  const { game_name, image_game, dataQuestion } = req.body;
+  const { gameName, imageGame, dataQuestion } = req.body;
   // dataQuestion : [ {question: "",key: 0, listAnswer: ["A", "B", "C", "D"],image:"url",time: 15,} ]
   try {
     const newGame = await Game.create({
-      title: game_name,
+      title: gameName,
       resources: {
-        image: { image: image_game },
+        image: { image: imageGame },
       },
       data: { array: dataQuestion },
     });
-    return handleSuccessResponse(res, 200, {}, "Insert thành công !");
+    return handleSuccessResponse(res, 200, {}, "Create kahoot thành công !");
   } catch (err) {
-    return handleErrorResponse(res, 400, "Insert thất bại !");
+    return handleErrorResponse(res, 400, "Create kahoot thất bại !");
   }
 };
 module.exports.updateGame = async (req, res) => {
-  const { game_id, game_name, image_game, dataQuestion } = req.body;
+  const { gameId, gameName, imageGame, dataQuestion } = req.body;
   // dataQuestion : [ {question: "",key: 0, listAnswer: ["A", "B", "C", "D"],image:"url",time: 15,} ]
-  const game_result = await Game.findOne({ _id: game_id });
+  const game_result = await Game.findOne({ _id: gameId });
   if (game_result) {
     const result = await Game.update_game(
-      game_id,
-      game_name,
-      image_game,
+      gameId,
+      gameName,
+      imageGame,
       dataQuestion
     );
     return handleSuccessResponse(res, 200, {}, "Update thành công");
@@ -40,9 +40,9 @@ module.exports.updateGame = async (req, res) => {
 };
 
 module.exports.getGameName = async (req, res) => {
-  const game_name = req.query.game_name;
+  const gameName = req.query.gameName;
   try {
-    const game_result = await Game.find({ game_name: game_name });
+    const game_result = await Game.find({ gameName: gameName });
     if (game_result) {
       return handleSuccessResponse(res, 200, game_result, "Success!");
     }
@@ -53,9 +53,9 @@ module.exports.getGameName = async (req, res) => {
 };
 
 module.exports.getGameId = async (req, res) => {
-  const game_id = req.query.id;
+  const gameId = req.query.id;
   try {
-    const game_result = await Game.findOne({ _id: game_id });
+    const game_result = await Game.findOne({ _id: gameId });
     if (game_result) {
       return handleSuccessResponse(res, 200, game_result, "Success!");
     }
@@ -76,9 +76,9 @@ module.exports.getAllGame = async (req, res) => {
 
 module.exports.deleteGame = async (req, res) => {
   try {
-    const game_id = req.body.game_id;
+    const gameId = req.body.gameId;
 
-    const result = await Game.deleteOne({ _id: game_id });
+    const result = await Game.deleteOne({ _id: gameId });
     if (result) {
       return handleSuccessResponse(res, 200, {}, "Delete Game success!");
     } else {
