@@ -17,7 +17,10 @@ var gameSchema = Schema(
       type: String,
       default: "Happy circle",
     },
-    cover: { type: String, default: "" },
+    cover: {
+      type: String,
+      default: "https://source.unsplash.com/user/erondu/1600x900",
+    },
     resources: {
       image: {
         next: {
@@ -85,32 +88,7 @@ var gameSchema = Schema(
       objects: { type: Array, default: ["obj_1", "obj_2", "obj_3", "obj_4"] },
       array: {
         type: Array,
-        default: [
-          {
-            question: "He was the first President of the United States",
-            key: 2, //Đáp án đúng
-            listAnswer: ["Lưu  Hai Đang", "Hai dang", "abc", "Đáp án 4"],
-            image:
-              "https://res.cloudinary.com/vnu-uet/image/upload/v1604428182/111_vx6tvo.jpg",
-            time: 15,
-          },
-          {
-            question: "He was the first President of the United States 1",
-            key: 2,
-            listAnswer: ["Đáp án 10", "Đáp án 2", "Đáp án 3", "Đáp án 4"],
-            image:
-              "https://res.cloudinary.com/vnu-uet/image/upload/v1604428182/111_vx6tvo.jpg",
-            time: 25,
-          },
-          {
-            question: "He was the first President of the United States 2",
-            key: 3,
-            listAnswer: ["Đáp án 0", "Đáp án 2", "Đáp án 3", "Đáp án 4"],
-            image:
-              "https://res.cloudinary.com/vnu-uet/image/upload/v1604428182/111_vx6tvo.jpg",
-            time: 35,
-          },
-        ],
+        default: [],
       },
     },
   },

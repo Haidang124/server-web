@@ -71,7 +71,7 @@ module.exports.getGameId = async (req, res) => {
     }
     return handleErrorResponse(res, 400, "Không tồn tại game!");
   } catch (error) {
-    return handleErrorResponse(res, 400, e.message);
+    return handleErrorResponse(res, 400, "Không tồn tại GameId");
   }
 };
 
