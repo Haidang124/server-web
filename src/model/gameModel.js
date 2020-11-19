@@ -8,6 +8,7 @@ var Schema = mongoose.Schema;
 
 var gameSchema = Schema(
   {
+    username: { type: String, default: "username" },
     game_type: {
       type: String,
       default: "happy-circle",
@@ -123,10 +124,6 @@ gameSchema.statics.update_game = async function (
   dataQuestion
 ) {
   // data: {gameId, gameName, imageGame, dataQuestion}
-  if (imageGame === "") {
-    imageGame =
-      "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/question-mark-icon-on-white-puzzle-royalty-free-image-917901148-1558452934.jpg";
-  }
   const result = await this.updateOne(
     { _id: gameId },
     {
@@ -141,6 +138,18 @@ gameSchema.statics.update_game = async function (
   );
   if (result) return true;
   throw Error("Update thất bại!");
+};
+
+gameSchema.statics.getGameId = async function (gameId) {
+  try {
+    const game_result = await Game.findOne({ _id: gameId });
+    if (game_result) {
+      return game_result;
+    }
+    return false;
+  } catch (error) {
+    throw Error("Không thể truy xuất!");
+  }
 };
 
 const Game = mongoose.model("game", gameSchema);
