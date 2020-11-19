@@ -11,5 +11,4 @@ router.get("/get-game-id", gameController.getGameId);
 router.get("/get-all-game", gameController.getAllGame);
 router.post("/deleteGame", gameController.deleteGame);
 router.post("/updateGame", gameController.updateGame);
-
 module.exports = router;

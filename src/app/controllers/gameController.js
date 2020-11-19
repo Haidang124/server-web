@@ -1,4 +1,5 @@
 const Game = require("../../model/gameModel");
+const UserController = require("./userController");
 const jwt = require("jsonwebtoken");
 const {
   handleErrorResponse,
@@ -6,21 +7,30 @@ const {
   getCurrentId,
 } = require("../../helper/responseHelper");
 const { game } = require("../../routers/gameRouter");
+const User = require("../../model/userModel");
 
 module.exports.createGame = async (req, res) => {
   const { gameName, imageGame, dataQuestion } = req.body;
   // dataQuestion : [ {question: "",key: 0, listAnswer: ["A", "B", "C", "D"],image:"url",time: 15,} ]
   try {
+    const username = await UserController.getUserName(req);
     const newGame = await Game.create({
+      username: username,
       title: gameName,
       resources: {
         image: { image: imageGame },
       },
       data: { array: dataQuestion },
     });
-    return handleSuccessResponse(res, 200, {}, "Create kahoot thành công !");
+    const resultAddGameId = await UserController.addGameId(req, newGame._id);
+    return handleSuccessResponse(
+      res,
+      200,
+      { arrayId: resultAddGameId },
+      "Create kahoot thành công !"
+    );
   } catch (err) {
-    return handleErrorResponse(res, 400, "Create kahoot thất bại !");
+    return handleErrorResponse(res, 400, err.message + username);
   }
 };
 module.exports.updateGame = async (req, res) => {
@@ -75,12 +85,21 @@ module.exports.getAllGame = async (req, res) => {
 };
 
 module.exports.deleteGame = async (req, res) => {
+  const gameId = req.body.gameId;
+  const game = await Game.findOne({ _id: gameId });
+  if (!game) {
+    return handleErrorResponse(res, 400, "Không tồn tại game!");
+  }
   try {
-    const gameId = req.body.gameId;
-
     const result = await Game.deleteOne({ _id: gameId });
-    if (result) {
-      return handleSuccessResponse(res, 200, {}, "Delete Game success!");
+    const resultDeleteGameId = await UserController.deleteGameId(req, gameId);
+    if (result && resultDeleteGameId) {
+      return handleSuccessResponse(
+        res,
+        200,
+        { resultDeleteGameId },
+        "Delete Game success!"
+      );
     } else {
       return handleErrorResponse(res, 400, "ERROR... Không thể xóa!");
     }

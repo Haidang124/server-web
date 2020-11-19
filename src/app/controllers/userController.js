@@ -6,6 +6,7 @@ const {
   getCurrentId,
 } = require("../../helper/responseHelper");
 const { use } = require("../../routers/usersRouter");
+const Game = require("../../model/gameModel");
 const maxAge = 3 * 24 * 60 * 60;
 const createToken = (id) => {
   return jwt.sign({ id }, "ptud web", {
@@ -92,9 +93,13 @@ module.exports.changePassword = async (req, res) => {
         "Thay đổi password thành công!"
       );
     } catch (error) {
-      return handleErrorResponse(res, 
-        400, 
-        error.message == "incorrect password"?"ERROR! Incorrect current password.": error.message);
+      return handleErrorResponse(
+        res,
+        400,
+        error.message == "incorrect password"
+          ? "ERROR! Incorrect current password."
+          : error.message
+      );
     }
   } else {
     return handleErrorResponse(res, 400, "No Found User");
@@ -102,7 +107,7 @@ module.exports.changePassword = async (req, res) => {
 };
 
 module.exports.getUserInfo = async (req, res) => {
-  // return data :{username, email, avatar, language, birthday, role}
+  // return data :{username, email, avatar, language, birthday, role, gameIdArray}
   try {
     const user_id = await getCurrentId(req);
     const user = await User.findOne({ _id: user_id });
@@ -132,6 +137,7 @@ module.exports.getUserInfo = async (req, res) => {
                 ? "0" + String(user.get("birthday").getDate())
                 : String(user.get("birthday").getDate())
               : "01"),
+          gameIdArray: user.get("gameIdArray"),
         },
         "Get User Complate!"
       );
@@ -139,5 +145,53 @@ module.exports.getUserInfo = async (req, res) => {
     return handleErrorResponse(res, 400, "Get User ERROR!");
   } catch (error) {
     return handleErrorResponse(res, 400, "No Found User");
+  }
+};
+module.exports.addGameId = async function (req, gameId) {
+  try {
+    const userId = await getCurrentId(req);
+    const user = await User.findOne({ _id: userId });
+    if (user) {
+      let gameIdArray = user.get("gameIdArray");
+      gameIdArray.push(String(gameId));
+      const result = await User.updateGameIdArray(userId, gameIdArray);
+      return gameIdArray;
+    } else {
+      throw Error("Không tồn tại user!");
+    }
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+module.exports.deleteGameId = async function (req, gameId) {
+  try {
+    const userId = await getCurrentId(req);
+    const user = await User.findOne({ _id: userId });
+    if (user) {
+      let gameIdArray = user.get("gameIdArray");
+      for (let i = 0; i < gameIdArray.length; i++) {
+        if (String(gameIdArray[i]) === gameId) {
+          gameIdArray.splice(i, 1);
+          break;
+        }
+      }
+      const result = await User.updateGameIdArray(userId, gameIdArray);
+      return gameIdArray;
+    } else {
+      throw Error("Không tồn tại user!");
+    }
+  } catch (error) {
+    throw Error(error.message);
+  }
+};
+module.exports.getUserName = async function (req, res) {
+  try {
+    const userId = await getCurrentId(req);
+    const username = await (await User.findOne({ _id: userId })).get(
+      "username"
+    );
+    return username;
+  } catch (error) {
+    throw Error(error.message);
   }
 };

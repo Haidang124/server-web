@@ -91,7 +91,7 @@ module.exports = (server) => {
         hostInfo[index].hostId = "redirectedId";
       }
       nsGame.to(data.pin).emit("redirect", { redirect: "/playing-game/" });
-      socket.emit("redirect", { redirect: "/game/123" });
+      socket.emit("redirect", { redirect: "/game/" + data.gameId });
     });
     socket.on("change-hostId", (data) => {
       let index = findInfobyHostId("redirectedId");
