@@ -49,6 +49,9 @@ module.exports = (server) => {
       ? getSocketsbyRoomName(roomName).map((socket) => socket.id)
       : null;
   };
+  const outRoom = (socket, codepin) => {
+    socket.leave(codepin);
+  };
   nsGame.on("connection", function (socket) {
     socket.on("host-join", () => {
       let codePin = randCode().toString();
@@ -58,12 +61,14 @@ module.exports = (server) => {
         codePin: codePin,
         playersId: [],
         playersName: [],
+        start: false,
       });
       socket.emit("showGamePin", {
         pin: codePin,
       });
     });
     socket.on("join-room", (data) => {
+      console.log(socket.id);
       if (getUserNamebyRoomeName(data.pin) !== null) {
         socket.join(data.pin);
         socket.username = data.username;
@@ -75,7 +80,10 @@ module.exports = (server) => {
             item.playersId = playersId;
           }
         });
-        nsGame.to(data.pin).emit("player-lobby", { players: playersName });
+        nsGame.to(data.pin).emit("player-lobby", {
+          players: playersName,
+          playerJoin: data.username,
+        });
         socket.emit("check-join-room", {
           result: true,
         });
@@ -90,8 +98,13 @@ module.exports = (server) => {
       if (index !== -1) {
         hostInfo[index].hostId = "redirectedId";
       }
+      hostInfo[index].start = true;
       nsGame.to(data.pin).emit("redirect", { redirect: "/playing-game/" });
       socket.emit("redirect", { redirect: "/game/" + data.gameId });
+    });
+    socket.on("current-length-game", (data) => {
+      console.log(data);
+      nsGame.emit("get-current-length-game", data);
     });
     socket.on("change-hostId", (data) => {
       let index = findInfobyHostId("redirectedId");
@@ -103,7 +116,6 @@ module.exports = (server) => {
         hostInfo[index].playersName = playersName;
         hostInfo[index].playersId = playersId;
       }
-      console.log(hostInfo);
     });
     socket.on("join-room-again", (data) => {
       socket.join(data.reCode);
@@ -141,6 +153,59 @@ module.exports = (server) => {
     //     arrNamePlayer: ["abc,cd,emf,cmnr"],
     //   });
     // });
+    socket.on("kick-player-out-room", (codePin) => {
+      outRoom(socket, codePin);
+    });
+    socket.on("kick-player-request", (key) => {
+      let index = findInfobyHostId(socket.id);
+      let socketId = hostInfo[index].playersId[key];
+      nsGame.to(socketId).emit("kick-player-response", hostInfo[index].codePin);
+      for (let j = 0; j < hostInfo[index].playersId.length; j++) {
+        if (hostInfo[index].playersId[j] === socketId) {
+          hostInfo[index].playersId.splice(j, 1);
+          hostInfo[index].playersName.splice(j, 1);
+          break;
+        }
+      }
+      nsGame
+        .to(hostInfo[index].hostId)
+        .emit("refreshPlayer", { players: hostInfo[index].playersName });
+      nsGame.to(socketId).emit("kick");
+    });
+    socket.on("disconnect", () => {
+      for (let i = 0; i < hostInfo.length; i++) {
+        if (hostInfo[i].hostId === socket.id) {
+          let hostCodePin = hostInfo[i].codePin;
+          if (hostInfo[i].start === true) {
+            hostInfo[i].start = false;
+            return;
+          }
+          outRoom(socket, hostCodePin);
+          console.log("host out room");
+          nsGame.to(hostCodePin).emit("host-disconnect");
+          hostInfo.splice(i, 1);
+          break;
+        } else {
+          for (let j = 0; j < hostInfo[i].playersId.length; j++) {
+            if (hostInfo[i].playersId[j] === socket.id) {
+              let playerCodepin = hostInfo[i].codePin;
+              let playerDisName = hostInfo[i].playersName[j];
+              if (hostInfo[i].start === true) {
+                return;
+              }
+              outRoom(socket, playerCodepin);
+              hostInfo[i].playersId.splice(j, 1);
+              hostInfo[i].playersName.splice(j, 1);
+              nsGame.to(playerCodepin).emit("player-disconnect", {
+                players: hostInfo[i].playersName,
+                playerDis: playerDisName,
+              });
+              break;
+            }
+          }
+        }
+      }
+    });
   });
   return io;
 };
